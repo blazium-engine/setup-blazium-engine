@@ -1,0 +1,54 @@
+name: Setup Blazium CLI Action
+
+description: >-
+  Setup Blazium CLI for use with macOS, Windows, and Linux CI/CD runners.
+
+author: 'Blazium'
+branding:
+  icon: 'hard-drive'
+  color: 'white'
+inputs:
+  version:
+    description: >-
+      Blazium CLI version: e.g., 0.0.13, 0.0.14, etc. Must include major, minor, and patch.
+    required: true
+  path:
+    description: >-
+      Path to install Blazium CLI to, relative to the current working directory of
+      the action.
+    default: 'blazium'
+  downloads-path:
+    description: >-
+      Path to download Blazium CLI to, relative to the current working directory of
+      the action.
+    default: 'downloads'
+  bin-path:
+    description: >-
+      Path for binaries to be installed to, relative to the current working
+      directory of the action. This is the path that will be added to the
+      system path.
+    default: 'bin'
+  os:
+    description: >-
+      Operating system to install Blazium CLI to. Options: Windows, Linux, MacOS
+    default: 'Linux'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Download Blazium CLI
+      shell: bash
+      run: |
+        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.version }}/blazium-cli
+        chmod +x ${{ inputs.downloads-path }}/blazium-cli
+
+    - name: Move to bin path
+      shell: bash
+      run: |
+        mv ${{ inputs.downloads-path }}/blazium-cli ${{ inputs.bin-path }}/blazium-cli
+        echo "$(pwd)/${{ inputs.bin-path }}" >> $GITHUB_PATH
+
+    - name: Verify Blazium CLI Installation
+      shell: bash
+      run: |
+        blazium-cli --version
