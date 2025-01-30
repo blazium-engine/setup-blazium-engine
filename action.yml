@@ -62,8 +62,15 @@ runs:
       run: |
         blazium-cli --version
 
-    - name: Verify Blazium CLI Installation
+    - name: Blazium CLI Editor
       shell: bash
       run: |
         mkdir -p ${{ inputs.bin-path }}
-        blazium-cli --arch ${{ inputs.arch }} --editor --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+
+    - name: Blazium CLI Template
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.bin-path }}
+        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+
