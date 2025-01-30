@@ -8,9 +8,14 @@ branding:
   icon: 'hard-drive'
   color: 'white'
 inputs:
-  version:
+  cli-version:
     description: >-
       Blazium CLI version: e.g., 0.0.13, 0.0.14, etc. Must include major, minor, and patch.
+    required: false
+    default: 0.0.14
+  version:
+    description: >-
+      Blazium Engine version: e.g., 0.1.184, 0.1.188, etc. Must include major, minor, and patch.
     required: true
   path:
     description: >-
@@ -41,6 +46,17 @@ inputs:
     description: >-
       Specify the platform (e.g., linux, windows, macos).
     required: true
+  download_editor:
+    description: >-
+      Download Blazium CLI Editor
+    required: false
+    default: 'true'
+  download_template:
+    description: >-
+      Download Blazium CLI Template
+    required: false
+    default: 'false'
+  
 runs:
   using: composite
   steps:
@@ -48,7 +64,7 @@ runs:
       shell: bash
       run: |
         mkdir -p ${{ inputs.downloads-path }}
-        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.version }}/blazium-cli
+        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.cli-version }}/blazium-cli
         chmod +x ${{ inputs.downloads-path }}/blazium-cli
         ls -l ${{ inputs.downloads-path }}
 
@@ -67,10 +83,12 @@ runs:
       run: |
         mkdir -p ${{ inputs.bin-path }}
         blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+      if: ${{ inputs.download_editor == 'true' }}
 
     - name: Blazium CLI Template
       shell: bash
       run: |
         mkdir -p ${{ inputs.bin-path }}
         blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+      if: ${{ inputs.download_template == 'true' }}
 
