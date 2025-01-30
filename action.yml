@@ -54,6 +54,7 @@ runs:
     - name: Move to bin path
       shell: bash
       run: |
+        mkdir -p ${{ inputs.bin-path }}
         mv ${{ inputs.downloads-path }}/blazium-cli ${{ inputs.bin-path }}/blazium-cli
         echo "$(pwd)/${{ inputs.bin-path }}" >> $GITHUB_PATH
 
