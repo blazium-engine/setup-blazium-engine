@@ -50,6 +50,7 @@ runs:
         mkdir -p ${{ inputs.downloads-path }}
         curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.version }}/blazium-cli
         chmod +x ${{ inputs.downloads-path }}/blazium-cli
+        ls -l ${{ inputs.downloads-path }}
 
     - name: Move to bin path
       shell: bash
