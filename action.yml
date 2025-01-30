@@ -55,9 +55,7 @@ runs:
     - name: Move to bin path
       shell: bash
       run: |
-        mkdir -p ${{ inputs.bin-path }}
-        mv ${{ inputs.downloads-path }}/blazium-cli ${{ inputs.bin-path }}/blazium-cli
-        echo "$(pwd)/${{ inputs.bin-path }}" >> $GITHUB_PATH
+        echo "$(pwd)/${{ inputs.downloads-path }}" >> $GITHUB_PATH
 
     - name: Verify Blazium CLI Installation
       shell: bash
@@ -67,4 +65,5 @@ runs:
     - name: Verify Blazium CLI Installation
       shell: bash
       run: |
-        blazium-cli --arch ${{ inputs.arch }} --editor --template --platform ${{ inputs.platform }}
+        mkdir -p ${{ inputs.bin-path }}
+        blazium-cli --arch ${{ inputs.arch }} --editor --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
