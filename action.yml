@@ -31,7 +31,15 @@ inputs:
   os:
     description: >-
       Operating system to install Blazium CLI to. Options: Windows, Linux, MacOS
-    default: 'Linux'
+    default: 'linux'
+    required: true
+  arch:
+    description: >-
+      Specify the architecture (e.g., x86_64, arm64, arm32, 32bit, 64bit).
+    required: true
+  platform:
+    description: >-
+      Specify the platform (e.g., linux, windows, macos).
     required: true
 runs:
   using: composite
@@ -39,6 +47,7 @@ runs:
     - name: Download Blazium CLI
       shell: bash
       run: |
+        mkdir -p ${{ inputs.downloads-path }}
         curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.version }}/blazium-cli
         chmod +x ${{ inputs.downloads-path }}/blazium-cli
 
@@ -52,3 +61,8 @@ runs:
       shell: bash
       run: |
         blazium-cli --version
+
+    - name: Verify Blazium CLI Installation
+      shell: bash
+      run: |
+        blazium-cli --arch ${{ inputs.arch }} --editor --template --platform ${{ inputs.platform }}
