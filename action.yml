@@ -84,6 +84,26 @@ runs:
         mkdir -p ${{ inputs.bin-path }}
         blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
       if: ${{ inputs.download_editor == 'true' }}
+    
+    - name: Extract the blazium-editor file from zip
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.bin-path }}
+        file=$(ls ${{ inputs.bin-path }})
+        # Unzip
+        unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
+        # Remove zip file
+        rm ${{ inputs.bin-path }}/$file
+        file=$(ls ${{ inputs.bin-path }})
+        # Set permissions
+        chmod +x ${{ inputs.bin-path }}/$file
+        # Save file into env file
+        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/$file" >> $GITHUB_ENV
+    
+    - name: Verify Blazium CLI Editor Installation
+      shell: bash
+      run: |
+        ${{ env.BLAZIUM_EDITOR }} --version
 
     - name: Blazium CLI Template
       shell: bash
