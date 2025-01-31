@@ -81,22 +81,22 @@ runs:
     - name: Blazium CLI Editor
       shell: bash
       run: |
-        mkdir -p ${{ inputs.bin-path }}
-        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+        mkdir -p ${{ inputs.downloads-path }}
+        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.downloads-path }}
       if: ${{ inputs.download_editor == 'true' }}
     
     - name: Extract the blazium-editor file from zip
       shell: bash
       run: |
-        mkdir -p ${{ inputs.bin-path }}
-        file=$(ls ${{ inputs.bin-path }})
-        echo $file
-        # Unzip
-        unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
-        # Remove zip file
-        rm ${{ inputs.bin-path }}/$file
-        file=$(ls ${{ inputs.bin-path }})
-        echo $file
+        # Unzip 1st time
+        file=$(ls ${{ inputs.downloads-path }})
+        unzip ${{ inputs.downloads-path }}/$file -d ${{ inputs.downloads-path }}
+        rm ${{ inputs.downloads-path }}/$file
+
+        # Unzip 2nd time
+        file=$(ls ${{ inputs.downloads-path }})
+        unzip ${{ inputs.downloads-path }}/$file -d ${{ inputs.bin-path }}
+        rm ${{ inputs.downloads-path }}/$file
         # Set permissions
         chmod +x ${{ inputs.bin-path }}/$file
         # Save file into env file
