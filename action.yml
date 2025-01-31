@@ -76,7 +76,7 @@ runs:
     - name: Blazium CLI Editor
       shell: bash
       run: |
-        mkdir -p ${{ inputs.downloads-path }}
+        mkdir -p ${{ inputs.bin-path }}
         ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
       if: ${{ inputs.download_editor == 'true' }}
     
