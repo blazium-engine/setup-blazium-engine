@@ -90,11 +90,13 @@ runs:
       run: |
         mkdir -p ${{ inputs.bin-path }}
         file=$(ls ${{ inputs.bin-path }})
+        echo $file
         # Unzip
         unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
         # Remove zip file
         rm ${{ inputs.bin-path }}/$file
         file=$(ls ${{ inputs.bin-path }})
+        echo $file
         # Set permissions
         chmod +x ${{ inputs.bin-path }}/$file
         # Save file into env file
