@@ -82,6 +82,7 @@ runs:
     
     - name: Extract the blazium-editor file from zip
       shell: bash
+      if: ${{ inputs.download_editor == 'true' }}
       run: |
         # Unzip 1st time
         file=$(ls ${{ inputs.bin-path }})
@@ -93,17 +94,37 @@ runs:
         unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
         rm ${{ inputs.bin-path }}/$file
         
-        # Set file path
+    - name: Set Blazium Editor Path
+      shell: bash
+      if: ${{ inputs.download_editor == 'true' && inputs.platform == 'macos' }}
+      run: |
+        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/Blazium.app" >> $GITHUB_ENV
+
+    - name: Set Blazium Editor Path
+      shell: bash
+      if: ${{ inputs.download_editor == 'true' && inputs.platform == 'linux' }}
+      run: |
         file=$(ls ${{ inputs.bin-path }})
-        # Print executable
-        echo "Executable: ${{ inputs.bin-path }}/$file"
-        # Set permissions
         chmod +x ${{ inputs.bin-path }}/$file
-        # Save file into env file
         echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/$file" >> $GITHUB_ENV
     
+    - name: Set Blazium Editor Path
+      shell: bash
+      if: ${{ inputs.download_editor == 'true' && inputs.platform == 'windows' }}
+      run: |
+        # Find the first subdirectory in the bin path
+        subdir=$(find "${{ inputs.bin-path }}" -type d -mindepth 1 -maxdepth 1)
+        
+        # Find the .console.exe file within the subdirectory
+        file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
+        
+        # Set the environment variable with Windows-style path separators
+        win_path=$(echo "$file" | sed 's/\//\\\\/g')
+        echo "BLAZIUM_EDITOR=$win_path" >> $GITHUB_ENV
+
     - name: Verify Blazium CLI Editor Installation
       shell: bash
+      if: ${{ inputs.download_editor == 'true' }}
       run: |
         ${{ env.BLAZIUM_EDITOR }} --version
 
@@ -111,6 +132,9 @@ runs:
       shell: bash
       run: |
         mkdir -p ${{ inputs.bin-path }}
-        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}/templates
+        cd ${{ inputs.bin-path }}/templates
+        file=$(ls ${{ inputs.bin-path }})
+        echo "BLAZIUM_TEMPLATE=${{ inputs.bin-path }}/templates/$file" >> $GITHUB_ENV
       if: ${{ inputs.download_template == 'true' }}
 
