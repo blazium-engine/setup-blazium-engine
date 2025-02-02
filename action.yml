@@ -66,18 +66,22 @@ runs:
           ${{ runner.os }}-blazium-cli-
     - name: Download Blazium CLI
       shell: bash
-      if: steps.cache-blazium-cli.outputs.cache-hit != 'true'
       run: |
-        echo "Runner os is $RUNNER_OS"
+        echo "Runner os is ${{ runner.os }}"
         if [ "$RUNNER_OS" == "Linux" ]; then
-          os=linux
+          os="linux"
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          os=windows
+          os="windows"
         else
-          os=darwin
+          os="macos"
         fi
         mkdir -p ${{ inputs.downloads-path }}/cli
-        curl -L -o ${{ inputs.downloads-path }}/cli/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
+        if [ "${{ steps.cache-blazium-cli.outputs.cache-hit }}" != "true" ]; then
+          curl -L -o ${{ inputs.downloads-path }}/cli/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
+        else
+          echo "Using cached Blazium CLI"
+          ls ${{ inputs.downloads-path }}/cli
+        fi
         file=$(ls ${{ inputs.downloads-path }}/cli)
         BLAZIUM_CLI=${{ inputs.downloads-path }}/cli/$file
         chmod +x $BLAZIUM_CLI
@@ -158,27 +162,35 @@ runs:
             unzip ${{ inputs.bin-path }}/editor/$file -d ${{ inputs.bin-path }}/editor
             rm ${{ inputs.bin-path }}/editor/$file
           fi
+          # Move file
+          if [ "$platform" == "macos" ]; then
+            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
+          elif [ "$platform" == "linux" ]; then
+            file=$(ls ${{ inputs.bin-path }}/editor)
+            chmod +x ${{ inputs.bin-path }}/editor/$file
+            # Rename it to Blazium
+            mv ${{ inputs.bin-path }}/editor/$file ${{ inputs.bin-path }}/editor/Blazium
+            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium" >> $GITHUB_ENV
+          else
+            # Find the first subdirectory in the bin path
+            subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
+            
+            # Find the .console.exe file within the subdirectory
+            file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
+            # Rename to Blazium.exe
+            mv $file ${{ inputs.bin-path }}/editor/Blazium.exe
+            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.exe" >> $GITHUB_ENV
+          fi
+
         else
           echo "Using cached platform $platform and arch $arch and mono $mono"
+          ls ${{ inputs.bin-path }}/editor
         fi
         
-        if [ "$platform" == "macos" ]; then
-          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
-        elif [ "$platform" == "linux" ]; then
-          file=$(ls ${{ inputs.bin-path }}/editor)
-          chmod +x ${{ inputs.bin-path }}/editor/$file
-          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/$file" >> $GITHUB_ENV
-        else
-          # Find the first subdirectory in the bin path
-          subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
-          
-          # Find the .console.exe file within the subdirectory
-          file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
-          
-          # Set the environment variable with Windows-style path separators
-          win_path=$(echo "$file" | sed 's/\//\\\\/g')
-          echo "BLAZIUM_EDITOR=$win_path" >> $GITHUB_ENV
-        fi
+        # Add Blazium to PATH
+        echo "${{ inputs.bin-path }}/editor" >> $GITHUB_PATH
+        # Export Blazium Editor ENV
+        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium" >> $GITHUB_ENV
 
     - name: Verify Blazium Editor Installation
       shell: bash
@@ -246,7 +258,14 @@ runs:
           ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
         else
           echo "Using cached template"
+          ls ${{ inputs.bin-path }}/templates
         fi
         file=$(ls ${{ inputs.bin-path }}/templates)
-        echo "BLAZIUM_TEMPLATE=${{ inputs.bin-path }}/templates/$file" >> $GITHUB_ENV
+        # Replace - with .
+        version_dot=$(echo "${{ inputs.version }}" | sed 's/-/./')
+        
+        echo "Unzipping template"
+        mkdir -v -p ~/.local/share/blazium/export_templates
+        unzip ${{ inputs.bin-path }}/templates/$file -d ~/.local/share/blazium/export_templates/$version_dot
+        ls ~/.local/share/blazium/export_templates/$version_dot
 
