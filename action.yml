@@ -79,7 +79,7 @@ runs:
         mkdir -p ${{ inputs.downloads-path }}/cli
         curl -L -o ${{ inputs.downloads-path }}/cli/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
         file=$(ls ${{ inputs.downloads-path }}/cli)
-        BLAZIUM_CLI=${{ inputs.downloads-path }}/$file
+        BLAZIUM_CLI=${{ inputs.downloads-path }}/cli/$file
         chmod +x $BLAZIUM_CLI
         echo "BLAZIUM_CLI=$BLAZIUM_CLI" >> $GITHUB_ENV
 
