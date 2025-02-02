@@ -56,8 +56,17 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Cache Blazium CLI
+      id: cache-blazium-cli
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.downloads-path }}/cli
+        key: ${{ runner.os }}-blazium-cli-${{ inputs.cli-version }}
+        restore-keys: |
+          ${{ runner.os }}-blazium-cli-
     - name: Download Blazium CLI
       shell: bash
+      if: steps.cache-blazium-cli.outputs.cache-hit != 'true'
       run: |
         echo "Runner os is $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
@@ -67,18 +76,31 @@ runs:
         else
           os=darwin
         fi
-        mkdir -p ${{ inputs.downloads-path }}
-        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
-        chmod +x ${{ inputs.downloads-path }}/blazium-cli
-        ls -l ${{ inputs.downloads-path }}
+        mkdir -p ${{ inputs.downloads-path }}/cli
+        curl -L -o ${{ inputs.downloads-path }}/cli/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
+        cd cli
+        file=$(ls ${{ inputs.downloads-path }})
+        chmod +x $file
+        BLAZIUM_CLI=${{ inputs.downloads-path }}/$file
+        echo "BLAZIUM_CLI=$BLAZIUM_CLI" >> $GITHUB_ENV
 
     - name: Verify Blazium CLI Installation
       shell: bash
       run: |
-        ${{ inputs.downloads-path }}/blazium-cli --version
+        ${{ env.BLAZIUM_CLI }} --version
 
-    - name: Blazium CLI Editor
+    - name: Cache Blazium Editor
       if: ${{ inputs.download_editor == 'true' }}
+      id: cache-editor
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.bin-path }}/editor
+        key: ${{ runner.os }}-blazium-editor-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        restore-keys: |
+          ${{ runner.os }}-blazium-editor-
+
+    - name: Blazium Editor Download
+      if: ${{ inputs.download_editor == 'true'}}
       shell: bash
       run: |
         echo "Runner os is $RUNNER_OS"
@@ -121,31 +143,37 @@ runs:
         else
           mono=""
         fi
-        echo "Using platform $platform and arch $arch and mono $mono"
-        mkdir -p ${{ inputs.bin-path }}
-        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}
-    
-        # Unzip 1st time
-        file=$(ls ${{ inputs.bin-path }})
-        unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
-        rm ${{ inputs.bin-path }}/$file
+        if [ "${{ steps.cache-editor.outputs.cache-hit }}" != "true" ]; then
+          echo "Using platform $platform and arch $arch and mono $mono"
+          mkdir -p ${{ inputs.bin-path }}/editor
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
+          
+          cd editor
 
-        if [ "$platform" == "macos" ]; then
-          # Unzip 2nd time
-          file=$(ls ${{ inputs.bin-path }})
-          unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
-          rm ${{ inputs.bin-path }}/$file
+          # Unzip 1st time
+          file=$(ls ${{ inputs.bin-path }}/editor)
+          unzip ${{ inputs.bin-path }}/editor/$file -d ${{ inputs.bin-path }}/editor
+          rm ${{ inputs.bin-path }}/editor/$file
+
+          if [ "$platform" == "macos" ]; then
+            # Unzip 2nd time
+            file=$(ls ${{ inputs.bin-path }}//editor)
+            unzip ${{ inputs.bin-path }}/editor/$file -d ${{ inputs.bin-path }}/editor
+            rm ${{ inputs.bin-path }}/editor/$file
+          fi
+        else
+          echo "Using cached platform $platform and arch $arch and mono $mono"
         fi
         
         if [ "$platform" == "macos" ]; then
-          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
+          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
         elif [ "$platform" == "linux" ]; then
-          file=$(ls ${{ inputs.bin-path }})
-          chmod +x ${{ inputs.bin-path }}/$file
-          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/$file" >> $GITHUB_ENV
+          file=$(ls ${{ inputs.bin-path }}/editor)
+          chmod +x ${{ inputs.bin-path }}/editor/$file
+          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/$file" >> $GITHUB_ENV
         else
           # Find the first subdirectory in the bin path
-          subdir=$(find "${{ inputs.bin-path }}" -type d -mindepth 1 -maxdepth 1)
+          subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
           
           # Find the .console.exe file within the subdirectory
           file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
@@ -155,14 +183,24 @@ runs:
           echo "BLAZIUM_EDITOR=$win_path" >> $GITHUB_ENV
         fi
 
-
-    - name: Verify Blazium CLI Editor Installation
+    - name: Verify Blazium Editor Installation
       shell: bash
       if: ${{ inputs.download_editor == 'true' }}
       run: |
         ${{ env.BLAZIUM_EDITOR }} --version
 
-    - name: Blazium CLI Template
+    - name: Cache Blazium Template
+      if: ${{ inputs.download_template == 'true' }}
+      id: cache-template
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.bin-path }}/templates
+        key: ${{ runner.os }}-blazium-template-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        restore-keys: |
+          ${{ runner.os }}-blazium-template-
+            
+    - name: Blazium Template
+      if: ${{ inputs.download_template == 'true' }}
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
@@ -205,10 +243,14 @@ runs:
           mono=""
         fi
         echo "Using platform $platform and arch $arch and mono $mono"
-        mkdir -p ${{ inputs.bin-path }}
-        blazium-cli --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
+
+        mkdir -p ${{ inputs.bin-path }}/templates
+        if [ "${{ steps.cache-template.outputs.cache-hit }}" != "true" ]; then
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
+        else
+          echo "Using cached template"
+        fi
         cd ${{ inputs.bin-path }}/templates
-        file=$(ls ${{ inputs.bin-path }})
+        file=$(ls ${{ inputs.bin-path }}/templates)
         echo "BLAZIUM_TEMPLATE=${{ inputs.bin-path }}/templates/$file" >> $GITHUB_ENV
-      if: ${{ inputs.download_template == 'true' }}
 
