@@ -83,6 +83,7 @@ runs:
     - name: Blazium CLI Editor
       shell: bash
       run: |
+        echo "RUNNER_OS is: $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=linux
