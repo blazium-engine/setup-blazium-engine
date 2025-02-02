@@ -123,7 +123,7 @@ runs:
         fi
         echo "Using platform $platform and arch $arch and mono $mono"
         mkdir -p ${{ inputs.bin-path }}
-        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch $arc --download --editor --platform $platform$mono ${{ inputs.bin-path }}
+        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}
       
     
         # Unzip 1st time
