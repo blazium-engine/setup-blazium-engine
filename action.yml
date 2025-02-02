@@ -59,6 +59,7 @@ runs:
     - name: Download Blazium CLI
       shell: bash
       run: |
+        echo "Runner os is $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
           os=linux
         elif [ "$RUNNER_OS" == "Windows" ]; then
@@ -80,6 +81,7 @@ runs:
       if: ${{ inputs.download_editor == 'true' }}
       shell: bash
       run: |
+        echo "Runner os is $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=linux
@@ -119,8 +121,9 @@ runs:
         else
           mono=""
         fi
+        echo "Using platform $platform and arch $arch and mono $mono"
         mkdir -p ${{ inputs.bin-path }}
-        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform $platform ${{ inputs.bin-path }} $mono
+        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch $arc --download --editor --platform $platform$mono ${{ inputs.bin-path }}
       
     
         # Unzip 1st time
@@ -195,13 +198,14 @@ runs:
             arch=${{ inputs.arch }}
           fi
         fi
-        if [ "${{ inputs.mono }}" == "true" ]; then
+        if [ "${{ inputs.download_mono }}" == "true" ]; then
           mono=" --mono"
         else
           mono=""
         fi
+        echo "Using platform $platform and arch $arch and mono $mono"
         mkdir -p ${{ inputs.bin-path }}
-        blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}/templates
+        blazium-cli --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
         cd ${{ inputs.bin-path }}/templates
         file=$(ls ${{ inputs.bin-path }})
         echo "BLAZIUM_TEMPLATE=${{ inputs.bin-path }}/templates/$file" >> $GITHUB_ENV
