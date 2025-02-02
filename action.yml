@@ -11,7 +11,6 @@ inputs:
   cli-version:
     description: >-
       Blazium CLI version: e.g., 0.0.13, 0.0.14, etc. Must include major, minor, and patch.
-    required: false
     default: 0.0.14
   version:
     description: >-
@@ -36,25 +35,22 @@ inputs:
   arch:
     description: >-
       Specify the architecture (e.g., x86_64, arm64, arm32, 32bit, 64bit).
-    required: true
+    default: ''
   platform:
     description: >-
       Specify the platform (e.g., linux, windows, macos).
-    required: true
+    default: ''
   download_editor:
     description: >-
       Download Blazium CLI Editor
-    required: false
     default: 'true'
   download_template:
     description: >-
       Download Blazium CLI Template
-    required: false
     default: 'false'
   download_mono:
     description: >-
       Download Blazium Mono Version
-    required: false
     default: 'false'
   
 runs:
@@ -86,18 +82,18 @@ runs:
         echo "RUNNER_OS is: $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
-            platform=linux
+            platform="linux"
           else
             platform=${{ inputs.platform }}
           fi
           if [ "${{ inputs.arch }}" == "" ]; then
-            arch=x86_64
+            arch="x86_64"
           else
             arch=${{ inputs.arch }}
           fi
         elif [ "$RUNNER_OS" == "Windows" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
-            platform=windows
+            platform="windows
           else
             platform=${{ inputs.platform }}
           fi
