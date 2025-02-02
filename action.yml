@@ -33,11 +33,6 @@ inputs:
       directory of the action. This is the path that will be added to the
       system path.
     default: 'bin'
-  os:
-    description: >-
-      Operating system to install Blazium CLI to. Options: Windows, Linux, MacOS
-    default: 'linux'
-    required: true
   arch:
     description: >-
       Specify the architecture (e.g., x86_64, arm64, arm32, 32bit, 64bit).
@@ -60,11 +55,21 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set runner os
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          echo "BLAZIUM_CLI_OS=linux" >> $GITHUB_ENV
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          echo "BLAZIUM_CLI_OS=windows" >> $GITHUB_ENV
+        else
+          echo "BLAZIUM_CLI_OS=macos" >> $GITHUB_ENV
+        fi
     - name: Download Blazium CLI
       shell: bash
       run: |
         mkdir -p ${{ inputs.downloads-path }}
-        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ inputs.os }}/${{ inputs.cli-version }}/blazium-cli
+        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ env.BLAZIUM_CLI_OS }}/${{ inputs.cli-version }}/blazium-cli
         chmod +x ${{ inputs.downloads-path }}/blazium-cli
         ls -l ${{ inputs.downloads-path }}
 
