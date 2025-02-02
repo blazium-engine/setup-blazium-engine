@@ -63,7 +63,7 @@ runs:
         elif [ "$RUNNER_OS" == "Windows" ]; then
           echo "BLAZIUM_CLI_OS=windows" >> $GITHUB_ENV
         else
-          echo "BLAZIUM_CLI_OS=macos" >> $GITHUB_ENV
+          echo "BLAZIUM_CLI_OS=darwin" >> $GITHUB_ENV
         fi
     - name: Download Blazium CLI
       shell: bash
