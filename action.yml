@@ -98,7 +98,7 @@ runs:
       shell: bash
       if: ${{ inputs.download_editor == 'true' && inputs.platform == 'macos' }}
       run: |
-        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/Blazium.app" >> $GITHUB_ENV
+        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
 
     - name: Set Blazium Editor Path
       shell: bash
