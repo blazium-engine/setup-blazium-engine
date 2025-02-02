@@ -51,25 +51,27 @@ inputs:
       Download Blazium CLI Template
     required: false
     default: 'false'
+  download_mono:
+    description: >-
+      Download Blazium Mono Version
+    required: false
+    default: 'false'
   
 runs:
   using: composite
   steps:
-    - name: Set runner os
-      shell: bash
-      run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-          echo "BLAZIUM_CLI_OS=linux" >> $GITHUB_ENV
-        elif [ "$RUNNER_OS" == "Windows" ]; then
-          echo "BLAZIUM_CLI_OS=windows" >> $GITHUB_ENV
-        else
-          echo "BLAZIUM_CLI_OS=darwin" >> $GITHUB_ENV
-        fi
     - name: Download Blazium CLI
       shell: bash
       run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          os=linux
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          os=windows
+        else
+          os=darwin
+        fi
         mkdir -p ${{ inputs.downloads-path }}
-        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/${{ env.BLAZIUM_CLI_OS }}/${{ inputs.cli-version }}/blazium-cli
+        curl -L -o ${{ inputs.downloads-path }}/blazium-cli https://cdn.blazium.app/cli/$os/${{ inputs.cli-version }}/blazium-cli
         chmod +x ${{ inputs.downloads-path }}/blazium-cli
         ls -l ${{ inputs.downloads-path }}
 
@@ -81,8 +83,47 @@ runs:
     - name: Blazium CLI Editor
       shell: bash
       run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=linux
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=x86_64
+          else
+            arch=${{ inputs.arch }}
+          fi
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=windows
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=x86_64
+          else
+            arch=${{ inputs.arch }}
+          fi
+        else
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=macos
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=macos
+          else
+            arch=${{ inputs.arch }}
+          fi
+        fi
+        if [ "${{ inputs.mono }}" == "true" ]; then
+          mono=" --mono"
+        else
+          mono=""
+        fi
         mkdir -p ${{ inputs.bin-path }}
-        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform ${{ inputs.platform }} ${{ inputs.bin-path }}
+        ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --editor --platform $platform ${{ inputs.bin-path }} $mono
       if: ${{ inputs.download_editor == 'true' }}
     
     - name: Extract the blazium-editor file from zip
@@ -136,6 +177,45 @@ runs:
     - name: Blazium CLI Template
       shell: bash
       run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=linux
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=x86_64
+          else
+            arch=${{ inputs.arch }}
+          fi
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=windows
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=x86_64
+          else
+            arch=${{ inputs.arch }}
+          fi
+        else
+          if [ "${{ inputs.platform }}" == "" ]; then
+            platform=macos
+          else
+            platform=${{ inputs.platform }}
+          fi
+          if [ "${{ inputs.arch }}" == "" ]; then
+            arch=macos
+          else
+            arch=${{ inputs.arch }}
+          fi
+        fi
+        if [ "${{ inputs.mono }}" == "true" ]; then
+          mono=" --mono"
+        else
+          mono=""
+        fi
         mkdir -p ${{ inputs.bin-path }}
         blazium-cli --get-version ${{ inputs.version }} --arch ${{ inputs.arch }} --download --template --platform ${{ inputs.platform }} ${{ inputs.bin-path }}/templates
         cd ${{ inputs.bin-path }}/templates
