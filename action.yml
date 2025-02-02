@@ -79,21 +79,20 @@ runs:
     - name: Blazium CLI Editor
       shell: bash
       run: |
-        echo "RUNNER_OS is: $RUNNER_OS"
         if [ "$RUNNER_OS" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
-            platform="linux"
+            platform=linux
           else
             platform=${{ inputs.platform }}
           fi
           if [ "${{ inputs.arch }}" == "" ]; then
-            arch="x86_64"
+            arch=x86_64
           else
             arch=${{ inputs.arch }}
           fi
         elif [ "$RUNNER_OS" == "Windows" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
-            platform="windows
+            platform=windows
           else
             platform=${{ inputs.platform }}
           fi
