@@ -124,17 +124,18 @@ runs:
         echo "Using platform $platform and arch $arch and mono $mono"
         mkdir -p ${{ inputs.bin-path }}
         ${{ inputs.downloads-path }}/blazium-cli --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}
-      
     
         # Unzip 1st time
         file=$(ls ${{ inputs.bin-path }})
         unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
         rm ${{ inputs.bin-path }}/$file
 
-        # Unzip 2nd time
-        file=$(ls ${{ inputs.bin-path }})
-        unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
-        rm ${{ inputs.bin-path }}/$file
+        if [ "$platform" == "macos" ]; then
+          # Unzip 2nd time
+          file=$(ls ${{ inputs.bin-path }})
+          unzip ${{ inputs.bin-path }}/$file -d ${{ inputs.bin-path }}
+          rm ${{ inputs.bin-path }}/$file
+        fi
         
         if [ "$platform" == "macos" ]; then
           echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
