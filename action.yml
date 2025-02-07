@@ -168,14 +168,11 @@ runs:
             rm ${{ inputs.bin-path }}/editor/$file
           fi
           # Move file
-          if [ "$platform" == "macos" ]; then
-            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
-          elif [ "$platform" == "linux" ]; then
+          if [ "$platform" == "linux" ]; then
             file=$(ls ${{ inputs.bin-path }}/editor)
             chmod +x ${{ inputs.bin-path }}/editor/$file
             # Rename it to Blazium
             mv ${{ inputs.bin-path }}/editor/$file ${{ inputs.bin-path }}/editor/Blazium
-            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium" >> $GITHUB_ENV
           else
             # Find the first subdirectory in the bin path
             subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
@@ -184,7 +181,6 @@ runs:
             file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
             # Rename to Blazium.exe
             mv $file ${{ inputs.bin-path }}/editor/Blazium.exe
-            echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.exe" >> $GITHUB_ENV
           fi
 
         else
@@ -194,8 +190,15 @@ runs:
         
         # Add Blazium to PATH
         echo "${{ inputs.bin-path }}/editor" >> $GITHUB_PATH
+
         # Export Blazium Editor ENV
-        echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium" >> $GITHUB_ENV
+        if [ "$platform" == "macos" ]; then
+          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.app/Contents/MacOS/Blazium" >> $GITHUB_ENV
+        elif [ "$platform" == "linux" ]; then
+          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium" >> $GITHUB_ENV
+        else
+          echo "BLAZIUM_EDITOR=${{ inputs.bin-path }}/editor/Blazium.exe" >> $GITHUB_ENV
+        fi
 
     - name: Verify Blazium Editor Installation
       shell: bash
