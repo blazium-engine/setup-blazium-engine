@@ -159,6 +159,7 @@ runs:
           echo "Unzipping editor"
           # Unzip 1st time
           file=$(ls ${{ inputs.bin-path }}/editor)
+          ls -lah ${{ inputs.bin-path }}/editor
           unzip ${{ inputs.bin-path }}/editor/$file -d ${{ inputs.bin-path }}/editor
           rm ${{ inputs.bin-path }}/editor/$file
 
