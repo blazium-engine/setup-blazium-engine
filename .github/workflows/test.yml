@@ -13,8 +13,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+        os: [{
+          name: ubuntu-latest,
+          platform: linux
+          }, {
+          name: macos-latest,
+          platform: darwin
+          }, { 
+          name: windows-latest,
+          platform: windows
+          }]
+    runs-on: ${{ matrix.os.name }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +33,7 @@ jobs:
         with:
           version: 0.1.184-nightly
           download_template: true
-          platform: ${{ matrix.os }}
+          platform: ${{ matrix.os.platform }}
 
       - name: 🔬 Verify Setup
         run: |
