@@ -173,7 +173,7 @@ runs:
             chmod +x ${{ inputs.bin-path }}/editor/$file
             # Rename it to Blazium
             mv ${{ inputs.bin-path }}/editor/$file ${{ inputs.bin-path }}/editor/Blazium
-          else
+          elif [ "$platform" == "windows" ]; then
             # Find the first subdirectory in the bin path
             subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
             
