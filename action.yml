@@ -38,7 +38,7 @@ inputs:
     default: ''
   platform:
     description: >-
-      Specify the platform (e.g., linux, windows, macos).
+      Specify the platform (e.g., linux, windows, darwin).
     default: ''
   download_editor:
     description: >-
@@ -73,7 +73,7 @@ runs:
         elif [ "$RUNNER_OS" == "Windows" ]; then
           os="windows"
         else
-          os="macos"
+          os="darwin"
         fi
         mkdir -p ${{ inputs.downloads-path }}/cli
         # If os is windows, use .exe
