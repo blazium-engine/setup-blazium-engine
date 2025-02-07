@@ -68,9 +68,9 @@ runs:
       shell: bash
       run: |
         echo "Runner os is ${{ runner.os }}"
-        if [ "$RUNNER_OS" == "Linux" ]; then
+        if [ "${{ runner.os }}" == "Linux" ]; then
           os="linux"
-        elif [ "$RUNNER_OS" == "Windows" ]; then
+        elif [ "${{ runner.os }}" == "Windows" ]; then
           os="windows"
         else
           os="darwin"
@@ -111,8 +111,8 @@ runs:
       if: ${{ inputs.download_editor == 'true'}}
       shell: bash
       run: |
-        echo "Runner os is $RUNNER_OS"
-        if [ "$RUNNER_OS" == "Linux" ]; then
+        echo "Runner os is ${{ runner.os }}"
+        if [ "${{ runner.os }}" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=linux
           else
@@ -123,14 +123,14 @@ runs:
           else
             arch=${{ inputs.arch }}
           fi
-        elif [ "$RUNNER_OS" == "Windows" ]; then
+        elif [ "${{ runner.os }}" == "Windows" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=windows
           else
             platform=${{ inputs.platform }}
           fi
           if [ "${{ inputs.arch }}" == "" ]; then
-            arch=x86_64
+            arch=64bit
           else
             arch=${{ inputs.arch }}
           fi
@@ -223,7 +223,7 @@ runs:
       if: ${{ inputs.download_template == 'true' }}
       shell: bash
       run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
+        if [ "${{ runner.os }}" == "Linux" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=linux
           else
@@ -234,7 +234,7 @@ runs:
           else
             arch=${{ inputs.arch }}
           fi
-        elif [ "$RUNNER_OS" == "Windows" ]; then
+        elif [ "${{ runner.os }}" == "Windows" ]; then
           if [ "${{ inputs.platform }}" == "" ]; then
             platform=windows
           else
