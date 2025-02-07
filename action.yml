@@ -176,11 +176,8 @@ runs:
             # Rename it to Blazium
             mv ${{ inputs.bin-path }}/editor/$file ${{ inputs.bin-path }}/editor/Blazium
           elif [ "$platform" == "windows" ]; then
-            # Find the first subdirectory in the bin path
-            subdir=$(find "${{ inputs.bin-path }}/editor" -type d -mindepth 1 -maxdepth 1)
-            
             # Find the .console.exe file within the subdirectory
-            file=$(find "$subdir" -type f -name '*.console.exe' | head -n 1)
+            file=$(find "${{ inputs.bin-path }}/editor" -type f -name '*.console.exe' | head -n 1)
             # Rename to Blazium.exe
             mv $file ${{ inputs.bin-path }}/editor/Blazium.exe
           fi
