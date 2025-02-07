@@ -38,7 +38,7 @@ inputs:
     default: ''
   platform:
     description: >-
-      Specify the platform (e.g., linux, windows, darwin).
+      Specify the platform (e.g., linux, windows, macos).
     default: ''
   download_editor:
     description: >-
