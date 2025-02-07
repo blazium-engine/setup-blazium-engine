@@ -180,6 +180,7 @@ runs:
             file=$(find "${{ inputs.bin-path }}/editor" -type f -name '*.console.exe' | head -n 1)
             # Rename to Blazium.exe
             mv $file ${{ inputs.bin-path }}/editor/Blazium.exe
+            ls -lah ${{ inputs.bin-path }}/editor
           fi
 
         else
