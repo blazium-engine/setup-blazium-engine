@@ -176,8 +176,8 @@ runs:
             # Rename it to Blazium
             mv ${{ inputs.bin-path }}/editor/$file ${{ inputs.bin-path }}/editor/Blazium
           elif [ "$platform" == "windows" ]; then
-            # Find the .console.exe file within the subdirectory
-            file=$(find "${{ inputs.bin-path }}/editor" -type f -name '*.console.exe' | head -n 1)
+            # Find an executable that is NOT a .console.exe
+            file=$(find "${{ inputs.bin-path }}/editor" -type f -name '*.exe' ! -name '*.console.exe' | head -n 1)
             # Rename to Blazium.exe
             mv $file ${{ inputs.bin-path }}/editor/Blazium.exe
             ls -lah ${{ inputs.bin-path }}/editor
