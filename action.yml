@@ -156,6 +156,7 @@ runs:
           mkdir -p ${{ inputs.bin-path }}/editor
           ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
           
+          echo "Unzipping editor"
           # Unzip 1st time
           file=$(ls ${{ inputs.bin-path }}/editor)
           unzip ${{ inputs.bin-path }}/editor/$file -d ${{ inputs.bin-path }}/editor
