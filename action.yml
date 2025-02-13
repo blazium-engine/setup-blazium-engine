@@ -274,7 +274,13 @@ runs:
         version_dot=$(echo "${{ inputs.version }}" | sed 's/-/./')
         
         echo "Unzipping template"
-        mkdir -v -p ~/.local/share/blazium/export_templates
-        unzip ${{ inputs.bin-path }}/templates/$file -d ~/.local/share/blazium/export_templates/$version_dot
-        ls ~/.local/share/blazium/export_templates/$version_dot
+        if [ "$platform" == "macos" ]; then
+          mkdir -v -p /Users/runner/Library/Application Support/Blazium/export_templates
+          unzip ${{ inputs.bin-path }}/templates/$file -d /Users/runner/Library/Application Support/Blazium/export_templates/$version_dot
+          ls /Users/runner/Library/Application Support/Blazium/export_templates/$version_dot
+        elif [ "$platform" == "linux" ]; then
+          mkdir -v -p ~/.local/share/blazium/export_templates
+          unzip ${{ inputs.bin-path }}/templates/$file -d ~/.local/share/blazium/export_templates/$version_dot
+          ls ~/.local/share/blazium/export_templates/$version_dot
+        fi
 
