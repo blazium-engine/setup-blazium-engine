@@ -62,8 +62,6 @@ runs:
       with:
         path: ${{ inputs.downloads-path }}/cli
         key: ${{ runner.os }}-blazium-cli-${{ inputs.cli-version }}
-        restore-keys: |
-          ${{ runner.os }}-blazium-cli-
     - name: Download Blazium CLI
       shell: bash
       run: |
@@ -104,8 +102,6 @@ runs:
       with:
         path: ${{ inputs.bin-path }}/editor
         key: ${{ runner.os }}-blazium-editor-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
-        restore-keys: |
-          ${{ runner.os }}-blazium-editor-
 
     - name: Blazium Editor Download
       if: ${{ inputs.download_editor == 'true'}}
@@ -214,8 +210,6 @@ runs:
       with:
         path: ${{ inputs.bin-path }}/templates
         key: ${{ runner.os }}-blazium-template-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
-        restore-keys: |
-          ${{ runner.os }}-blazium-template-
             
     - name: Blazium Template
       if: ${{ inputs.download_template == 'true' }}
