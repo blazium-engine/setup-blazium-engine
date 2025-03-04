@@ -40,6 +40,7 @@ jobs:
           Blazium --version
       
       - name: 🔬 Verify Blazium Template Installation
+        shell: bash
         run: |
           # Check that the template is installed
           ls ${{ env.BLAZIUM_TEMPLATE }}
@@ -48,3 +49,4 @@ jobs:
             echo "Template is empty"
             exit 1
           fi
+      
