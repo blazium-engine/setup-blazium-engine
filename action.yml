@@ -279,9 +279,9 @@ runs:
           ls ~/.local/share/blazium/export_templates/$version_dot
           echo "BLAZIUM_TEMPLATE=~/.local/share/blazium/export_templates/$version_dot" >> $GITHUB_ENV
         else
-          mkdir -v -p "C:/Users/runner/AppData/Roaming/Blazium/export_templates"
-          unzip ${{ inputs.bin-path }}/templates/$file -d "C:/Users/runner/AppData/Roaming/Blazium/export_templates/$version_dot"
-          ls "C:/Users/runner/AppData/Roaming/Blazium/export_templates/$version_dot"
-          echo "BLAZIUM_TEMPLATE=\"C:/Users/runner/AppData/Roaming/Blazium/export_templates/$version_dot\"" >> $GITHUB_ENV
+          mkdir -v -p "$HOME/AppData/Roaming/Blazium/export_templates"
+          unzip ${{ inputs.bin-path }}/templates/$file -d "$HOME/AppData/Roaming/Blazium/export_templates/$version_dot"
+          ls "$HOME/AppData/Roaming/Blazium/export_templates/$version_dot"
+          echo "BLAZIUM_TEMPLATE=\"$HOME/AppData/Roaming/Blazium/export_templates/$version_dot\"" >> $GITHUB_ENV
         fi
 
