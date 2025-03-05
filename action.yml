@@ -20,30 +20,22 @@ inputs:
     description: 'Path to download Blazium CLI to, relative to the current working directory of the action.'
     default: 'downloads'
   bin-path:
-    description: |
-      Path for binaries to be installed to, relative to the current working
-      directory of the action. This is the path that will be added to the
-      system path.
+    description: 'Path for binaries to be installed to, relative to the current working directory of the action. This is the path that will be added to the system path.'
     default: 'bin'
   arch:
-    description: >-
-      Specify the architecture (e.g., x86_64, arm64, arm32, 32bit, 64bit).
+    description: 'Specify the architecture (e.g., x86_64, arm64, arm32, 32bit, 64bit).'
     default: ''
   platform:
-    description: >-
-      Specify the platform (e.g., linux, windows, macos).
+    description: 'Specify the platform (e.g., linux, windows, macos).'
     default: ''
   download_editor:
-    description: >-
-      Download Blazium CLI Editor
+    description: 'Download Blazium CLI Editor'
     default: 'true'
   download_template:
-    description: >-
-      Download Blazium CLI Template
+    description: 'Download Blazium CLI Template'
     default: 'false'
   download_mono:
-    description: >-
-      Download Blazium Mono Version
+    description: 'Download Blazium Mono Version'
     default: 'false'
   
 runs:
