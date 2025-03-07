@@ -13,9 +13,6 @@ inputs:
   version:
     description: 'Blazium Engine version: e.g., 0.1.184, 0.1.188, etc. Must include major, minor, and patch.'
     required: true
-  path:
-    description: 'Path to install Blazium CLI to, relative to the current working directory of the action.'
-    default: 'blazium'
   downloads-path:
     description: 'Path to download Blazium CLI to, relative to the current working directory of the action.'
     default: 'downloads'
