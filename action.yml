@@ -28,6 +28,9 @@ inputs:
   download_mono:
     description: 'Download Blazium Mono Version'
     default: 'false'
+  use-cache:
+    description: 'Use cache'
+    default: 'true'
   
 runs:
   using: composite
@@ -38,7 +41,7 @@ runs:
         version: 0.0.14
 
     - name: Cache Blazium Editor
-      if: ${{ inputs.download_editor == 'true' }}
+      if: ${{ inputs.download_editor == 'true' || inputs.use_cache == 'true' }}
       id: cache-editor
       uses: actions/cache@v3
       with:
@@ -146,7 +149,7 @@ runs:
         ${{ env.BLAZIUM_EDITOR }} --version
 
     - name: Cache Blazium Template
-      if: ${{ inputs.download_template == 'true' }}
+      if: ${{ inputs.download_template == 'true' && inputs.use_cache == 'true' }}
       id: cache-template
       uses: actions/cache@v3
       with:
