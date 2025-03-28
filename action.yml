@@ -74,6 +74,7 @@ runs:
                 version_filter=$rest
             fi
         else
+            echo "version_latest=$input" >> $GITHUB_OUTPUT
             exit 0
         fi
 
@@ -132,6 +133,7 @@ runs:
 
         if [ -n "$latest" ]; then
             echo "$latest"
+            echo "version_latest=$latest" >> $GITHUB_OUTPUT
         else
             echo "No version found matching the criteria" >&2
             exit 1
@@ -144,7 +146,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ inputs.bin-path }}/editor
-        key: ${{ runner.os }}-blazium-editor-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        key: ${{ runner.os }}-blazium-editor-${{ env.version_latest }}-${{ inputs.platform }}-${{ inputs.arch }}
 
     - name: Blazium Editor Download
       if: ${{ inputs.download_editor == 'true'}}
@@ -193,7 +195,7 @@ runs:
         if [ "${{ steps.cache-editor.outputs.cache-hit }}" != "true" ]; then
           echo "Using platform $platform and arch $arch and mono $mono"
           mkdir -p ${{ inputs.bin-path }}/editor
-          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ env.version_latest }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
           
           echo "Unzipping editor"
           # Unzip 1st time
@@ -252,7 +254,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ inputs.bin-path }}/templates
-        key: ${{ runner.os }}-blazium-template-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        key: ${{ runner.os }}-blazium-template-${{ env.version_latest }}-${{ inputs.platform }}-${{ inputs.arch }}
             
     - name: Blazium Template
       if: ${{ inputs.download_template == 'true' }}
@@ -301,14 +303,14 @@ runs:
 
         mkdir -p ${{ inputs.bin-path }}/templates
         if [ "${{ steps.cache-template.outputs.cache-hit }}" != "true" ]; then
-          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ env.version_latest }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
         else
           echo "Using cached template"
           ls ${{ inputs.bin-path }}/templates
         fi
         file=$(ls ${{ inputs.bin-path }}/templates)
         # Replace - with .
-        version_dot=$(echo "${{ inputs.version }}" | sed 's/-/./')
+        version_dot=$(echo "${{ env.version_latest }}" | sed 's/-/./')
         
         echo "Unzipping template"
         if [ "$platform" == "macos" ]; then
