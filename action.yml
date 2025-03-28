@@ -55,6 +55,10 @@ runs:
 
         # Parse the input argument
         input=${{ inputs.version }}
+        if [ -z "$input" ]; then
+            echo "Usage: $0 [latest|latest-<major>|latest-<major.minor>|latest-<channel>|latest-<channel>-<major>|latest-<channel>-<major.minor>]"
+            exit 1
+        fi
 
         # Extract channel if specified
         channel=""
@@ -74,7 +78,7 @@ runs:
                 version_filter=$rest
             fi
         else
-            echo "version_latest=$input" >> $GITHUB_OUTPUT
+            echo "version_latest=$input" >> $GITHUB_ENV
             exit 0
         fi
 
@@ -82,6 +86,7 @@ runs:
         get_latest_version() {
             local versions=$1
             local filter=$2
+            local is_nightly=$3
             
             if [ -n "$filter" ]; then
                 if [[ $filter =~ ^[0-9]+$ ]]; then
@@ -105,7 +110,13 @@ runs:
             
             # Sort versions in descending order and pick the first one
             latest=$(echo "$filtered_versions" | sort -V -r | head -n 1)
-            echo "$latest"
+            
+            # Append -nightly if it's a nightly version
+            if [ "$is_nightly" = true ]; then
+                echo "${latest}-nightly"
+            else
+                echo "$latest"
+            fi
         }
 
         # Get versions based on channel
@@ -121,23 +132,27 @@ runs:
         if [ -z "$channel" ]; then
             # Compare across both channels
             all_versions=$(echo -e "$nightly_versions\n$release_versions")
-            latest=$(get_latest_version "$(echo "$all_versions" | jq -R . | jq -s .)" "$version_filter")
+            latest_raw=$(get_latest_version "$(echo "$all_versions" | jq -R . | jq -s .)" "$version_filter" false)
+            
+            # Check if the latest version is from nightly or release
+            if echo "$nightly_versions" | grep -q "^$latest_raw$"; then
+                echo "${latest_raw}-nightly"
+                echo "version_latest=${latest_raw}-nightly" >> $GITHUB_ENV
+            else
+                echo "$latest_raw"
+                echo "version_latest=$latest_raw" >> $GITHUB_ENV
+            fi
         else
             # Process specific channel
             if [ "$channel" = "nightly" ]; then
-                latest=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter")
+                latest_nightly=${get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter" true)
+                echo "version_latest=$latest_nightly"
             elif [ "$channel" = "release" ]; then
-                latest=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter")
+                latest_release=${get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter" false)
+                echo "version_latest=$latest_release"
             fi
         fi
 
-        if [ -n "$latest" ]; then
-            echo "$latest"
-            echo "version_latest=$latest" >> $GITHUB_OUTPUT
-        else
-            echo "No version found matching the criteria" >&2
-            exit 1
-        fi
 
 
     - name: Cache Blazium Editor
