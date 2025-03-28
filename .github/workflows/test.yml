@@ -32,7 +32,7 @@ jobs:
       - uses: blazium-engine/setup-blazium@master
         name: 🤖 Setup Blazium
         with:
-          version: 0.3.74-nightly
+          version: ${{ matrix.version }}
           download_template: true
           platform: ${{ matrix.os.platform }}
 
