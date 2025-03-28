@@ -39,6 +39,104 @@ runs:
       name: 🤖 Setup Blazium CLI
       with:
         version: 0.0.14
+    
+    - name: Get latest if specified
+      shell: bash
+      run: |
+        API_URL="https://blazium.app/api/download-options/editor"
+
+        # Fetch the JSON data from the API
+        json_data=$(curl -s "$API_URL")
+
+        if [ -z "$json_data" ]; then
+            echo "Error: Failed to fetch data from the API" >&2
+            exit 1
+        fi
+
+        # Parse the input argument
+        input=${{ inputs.version }}
+
+        # Extract channel if specified
+        channel=""
+        version_filter=""
+        if [[ $input == latest-* ]]; then
+            rest=${input#latest-}
+            
+            # Check if it's a channel specification
+            if [[ $rest == nightly ]] || [[ $rest == release ]]; then
+                channel=$rest
+            elif [[ $rest == *-* ]]; then
+                # Has both channel and version filter
+                channel=${rest%%-*}
+                version_filter=${rest#*-}
+            else
+                # Just version filter
+                version_filter=$rest
+            fi
+        else
+            exit 0
+        fi
+
+        # Function to get the latest version from a list
+        get_latest_version() {
+            local versions=$1
+            local filter=$2
+            
+            if [ -n "$filter" ]; then
+                if [[ $filter =~ ^[0-9]+$ ]]; then
+                    # Major version filter (e.g., 0)
+                    filtered_versions=$(echo "$versions" | jq -r ".[] | select(startswith(\"${filter}.\"))")
+                elif [[ $filter =~ ^[0-9]+\.[0-9]+$ ]]; then
+                    # Major.minor version filter (e.g., 0.4)
+                    filtered_versions=$(echo "$versions" | jq -r ".[] | select(startswith(\"${filter}.\"))")
+                else
+                    echo "Invalid version filter format: $filter" >&2
+                    exit 1
+                fi
+            else
+                filtered_versions=$(echo "$versions" | jq -r ".[]")
+            fi
+            
+            if [ -z "$filtered_versions" ]; then
+                echo "No versions found matching the filter" >&2
+                exit 1
+            fi
+            
+            # Sort versions in descending order and pick the first one
+            latest=$(echo "$filtered_versions" | sort -V -r | head -n 1)
+            echo "$latest"
+        }
+
+        # Get versions based on channel
+        if [ -z "$channel" ] || [ "$channel" = "nightly" ]; then
+            nightly_versions=$(echo "$json_data" | jq -r '.versions.nightly[]')
+        fi
+
+        if [ -z "$channel" ] || [ "$channel" = "release" ]; then
+            release_versions=$(echo "$json_data" | jq -r '.versions.release[]')
+        fi
+
+        # Process versions
+        if [ -z "$channel" ]; then
+            # Compare across both channels
+            all_versions=$(echo -e "$nightly_versions\n$release_versions")
+            latest=$(get_latest_version "$(echo "$all_versions" | jq -R . | jq -s .)" "$version_filter")
+        else
+            # Process specific channel
+            if [ "$channel" = "nightly" ]; then
+                latest=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter")
+            elif [ "$channel" = "release" ]; then
+                latest=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter")
+            fi
+        fi
+
+        if [ -n "$latest" ]; then
+            echo "$latest"
+        else
+            echo "No version found matching the criteria" >&2
+            exit 1
+        fi
+
 
     - name: Cache Blazium Editor
       if: ${{ inputs.download_editor == 'true' || inputs.use_cache == 'true' }}
