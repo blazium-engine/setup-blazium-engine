@@ -143,10 +143,10 @@ runs:
             # Process specific channel
             if [ "$channel" = "nightly" ]; then
                 latest_nightly=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter" true)
-                echo "version_latest=$latest_nightly"
+                echo "version_latest=$latest_nightly" >> $GITHUB_ENV
             elif [ "$channel" = "release" ]; then
                 latest_release=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter" false)
-                echo "version_latest=$latest_release"
+                echo "version_latest=$latest_release" >> $GITHUB_ENV
             fi
         fi
 
