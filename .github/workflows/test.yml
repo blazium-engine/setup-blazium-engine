@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        version: [0.4.39, 0.4.10-nightly, latest, latest-nightly, latest-release, latest-0, latest-0.4, latest-0.3, latest-nightly, latest-release, latest-nightly-0, latest-nightly-0.3, latest-release-0, latest-release-0.4]
         os: [{
           name: ubuntu-latest,
           platform: linux
@@ -31,9 +32,10 @@ jobs:
       - uses: blazium-engine/setup-blazium@master
         name: 🤖 Setup Blazium
         with:
-          version: 0.3.74-nightly
+          version: ${{ matrix.version }}
           download_template: true
           platform: ${{ matrix.os.platform }}
+          use-cache: false
 
       - name: 🔬 Verify Setup
         run: |

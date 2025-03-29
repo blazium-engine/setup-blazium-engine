@@ -39,6 +39,116 @@ runs:
       name: 🤖 Setup Blazium CLI
       with:
         version: 0.0.14
+    
+    - name: Get latest if specified
+      shell: bash
+      run: |
+        API_URL="https://blazium.app/api/download-options/editor"
+
+        # Fetch the JSON data from the API
+        json_data=$(curl -s "$API_URL")
+
+        if [ -z "$json_data" ]; then
+            echo "Error: Failed to fetch data from the API" >&2
+            exit 1
+        fi
+
+        # Parse the input argument
+        input=${{ inputs.version }}
+
+        # Extract channel if specified
+        channel=""
+        version_filter=""
+        echo "Using version $input"
+        if [[ $input == latest-* ]]; then
+            rest=${input#latest-}
+            
+            # Check if it's a channel specification
+            if [[ $rest == nightly ]] || [[ $rest == release ]]; then
+                channel=$rest
+            elif [[ $rest == *-* ]]; then
+                # Has both channel and version filter
+                channel=${rest%%-*}
+                version_filter=${rest#*-}
+            else
+                # Just version filter
+                version_filter=$rest
+            fi
+        elif [[ ! "$input" =~ latest ]]; then
+            echo "version_latest=$input" >> $GITHUB_ENV
+            exit 0
+        fi
+
+        # Function to get the latest version from a list
+        get_latest_version() {
+            local versions=$1
+            local filter=$2
+            local is_nightly=$3
+            
+            if [ -n "$filter" ]; then
+                if [[ $filter =~ ^[0-9]+$ ]]; then
+                    # Major version filter (e.g., 0)
+                    filtered_versions=$(echo "$versions" | jq -r ".[] | select(startswith(\"${filter}.\"))")
+                elif [[ $filter =~ ^[0-9]+\.[0-9]+$ ]]; then
+                    # Major.minor version filter (e.g., 0.4)
+                    filtered_versions=$(echo "$versions" | jq -r ".[] | select(startswith(\"${filter}.\"))")
+                else
+                    echo "Invalid version filter format: $filter" >&2
+                    exit 1
+                fi
+            else
+                filtered_versions=$(echo "$versions" | jq -r ".[]")
+            fi
+            
+            if [ -z "$filtered_versions" ]; then
+                echo "No versions found matching the filter" >&2
+                exit 1
+            fi
+            
+            # Sort versions in descending order and pick the first one
+            latest=$(echo "$filtered_versions" | sort -V -r | head -n 1)
+            
+            # Append -nightly if it's a nightly version
+            if [ "$is_nightly" = true ]; then
+                echo "${latest}-nightly"
+            else
+                echo "$latest"
+            fi
+        }
+
+        # Get versions based on channel
+        if [ -z "$channel" ] || [ "$channel" = "nightly" ]; then
+            nightly_versions=$(echo "$json_data" | jq -r '.versions.nightly[]')
+        fi
+
+        if [ -z "$channel" ] || [ "$channel" = "release" ]; then
+            release_versions=$(echo "$json_data" | jq -r '.versions.release[]')
+        fi
+
+        # Process versions
+        if [ -z "$channel" ]; then
+            # Compare across both channels
+            all_versions=$(echo -e "$nightly_versions\n$release_versions")
+            latest_raw=$(get_latest_version "$(echo "$all_versions" | jq -R . | jq -s .)" "$version_filter" false)
+            
+            # Check if the latest version is from nightly or release
+            if echo "$nightly_versions" | grep -q "^$latest_raw$"; then
+                echo "${latest_raw}-nightly"
+                echo "version_latest=${latest_raw}-nightly" >> $GITHUB_ENV
+            else
+                echo "$latest_raw"
+                echo "version_latest=$latest_raw" >> $GITHUB_ENV
+            fi
+        else
+            # Process specific channel
+            if [ "$channel" = "nightly" ]; then
+                latest_nightly=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter" true)
+                echo "version_latest=$latest_nightly" >> $GITHUB_ENV
+            elif [ "$channel" = "release" ]; then
+                latest_release=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter" false)
+                echo "version_latest=$latest_release" >> $GITHUB_ENV
+            fi
+        fi
 
     - name: Cache Blazium Editor
       if: ${{ inputs.download_editor == 'true' || inputs.use_cache == 'true' }}
@@ -46,7 +156,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ inputs.bin-path }}/editor
-        key: ${{ runner.os }}-blazium-editor-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        key: ${{ runner.os }}-blazium-editor-${{ env.version_latest }}-${{ inputs.platform }}-${{ inputs.arch }}
 
     - name: Blazium Editor Download
       if: ${{ inputs.download_editor == 'true'}}
@@ -95,7 +205,7 @@ runs:
         if [ "${{ steps.cache-editor.outputs.cache-hit }}" != "true" ]; then
           echo "Using platform $platform and arch $arch and mono $mono"
           mkdir -p ${{ inputs.bin-path }}/editor
-          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ env.version_latest }} --arch $arch --download --editor --platform $platform$mono ${{ inputs.bin-path }}/editor
           
           echo "Unzipping editor"
           # Unzip 1st time
@@ -154,7 +264,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ inputs.bin-path }}/templates
-        key: ${{ runner.os }}-blazium-template-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.arch }}
+        key: ${{ runner.os }}-blazium-template-${{ env.version_latest }}-${{ inputs.platform }}-${{ inputs.arch }}
             
     - name: Blazium Template
       if: ${{ inputs.download_template == 'true' }}
@@ -203,14 +313,14 @@ runs:
 
         mkdir -p ${{ inputs.bin-path }}/templates
         if [ "${{ steps.cache-template.outputs.cache-hit }}" != "true" ]; then
-          ${{ env.BLAZIUM_CLI }} --get-version ${{ inputs.version }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
+          ${{ env.BLAZIUM_CLI }} --get-version ${{ env.version_latest }} --arch $arch --download --template --platform $platform$mono ${{ inputs.bin-path }}/templates
         else
           echo "Using cached template"
           ls ${{ inputs.bin-path }}/templates
         fi
         file=$(ls ${{ inputs.bin-path }}/templates)
         # Replace - with .
-        version_dot=$(echo "${{ inputs.version }}" | sed 's/-/./')
+        version_dot=$(echo "${{ env.version_latest }}" | sed 's/-/./')
         
         echo "Unzipping template"
         if [ "$platform" == "macos" ]; then
