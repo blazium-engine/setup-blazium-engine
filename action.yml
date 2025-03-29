@@ -59,6 +59,7 @@ runs:
         # Extract channel if specified
         channel=""
         version_filter=""
+        echo "Using version $input"
         if [[ $input == latest-* ]]; then
             rest=${input#latest-}
             
@@ -141,10 +142,10 @@ runs:
         else
             # Process specific channel
             if [ "$channel" = "nightly" ]; then
-                latest_nightly=${get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter" true)
+                latest_nightly=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.nightly')" "$version_filter" true)
                 echo "version_latest=$latest_nightly"
             elif [ "$channel" = "release" ]; then
-                latest_release=${get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter" false)
+                latest_release=$(get_latest_version "$(echo "$json_data" | jq -c '.versions.release')" "$version_filter" false)
                 echo "version_latest=$latest_release"
             fi
         fi
