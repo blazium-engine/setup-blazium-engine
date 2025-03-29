@@ -55,10 +55,6 @@ runs:
 
         # Parse the input argument
         input=${{ inputs.version }}
-        if [ -z "$input" ]; then
-            echo "Usage: $0 [latest|latest-<major>|latest-<major.minor>|latest-<channel>|latest-<channel>-<major>|latest-<channel>-<major.minor>]"
-            exit 1
-        fi
 
         # Extract channel if specified
         channel=""
@@ -77,7 +73,8 @@ runs:
                 # Just version filter
                 version_filter=$rest
             fi
-        else
+        # if it doesnt contain latest then put normal version
+        elif [[ ! "$input" =~ latest ]]; then
             echo "version_latest=$input" >> $GITHUB_ENV
             exit 0
         fi
@@ -152,8 +149,6 @@ runs:
                 echo "version_latest=$latest_release"
             fi
         fi
-
-
 
     - name: Cache Blazium Editor
       if: ${{ inputs.download_editor == 'true' || inputs.use_cache == 'true' }}
