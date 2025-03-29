@@ -319,8 +319,11 @@ runs:
           ls ${{ inputs.bin-path }}/templates
         fi
         file=$(ls ${{ inputs.bin-path }}/templates)
-        # Replace - with .
-        version_dot=$(echo "${{ env.version_latest }}" | sed 's/-/./')
+        if [[ "${{ env.version_latest }}" != *-* ]]; then
+            version_dot="${{ env.version_latest }}.release"
+        else
+            version_dot=$(echo "${{ env.version_latest }}" | sed 's/-/./')
+        fi
         
         echo "Unzipping template"
         if [ "$platform" == "macos" ]; then
