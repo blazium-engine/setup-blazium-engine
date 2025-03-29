@@ -73,7 +73,6 @@ runs:
                 # Just version filter
                 version_filter=$rest
             fi
-        # if it doesnt contain latest then put normal version
         elif [[ ! "$input" =~ latest ]]; then
             echo "version_latest=$input" >> $GITHUB_ENV
             exit 0
