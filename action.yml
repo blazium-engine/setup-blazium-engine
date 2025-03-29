@@ -342,4 +342,8 @@ runs:
           ls "$HOME/AppData/Roaming/Blazium/export_templates/$version_dot"
           echo "BLAZIUM_TEMPLATE=\"$HOME/AppData/Roaming/Blazium/export_templates/$version_dot\"" >> $GITHUB_ENV
         fi
+    - name: Set installed version env
+      shell: bash
+      run: |
+        echo "BLAZIUM_INSTALLED_VERSION=${{ env.version_latest }}" >> $GITHUB_ENV
 
