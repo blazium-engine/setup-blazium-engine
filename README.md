@@ -14,3 +14,21 @@ Reusable Action that downloads and installs the Blazium Engine or the Blazium Te
   run: |
     Blazium --version
 ```
+
+Get latest:
+
+```yml
+- uses: blazium-engine/setup-blazium-engine@master
+  name: 🤖 Setup Blazium
+  with:
+    version: latest
+```
+
+Get latest with specific version major:
+
+```yml
+- uses: blazium-engine/setup-blazium-engine@master
+  name: 🤖 Setup Blazium
+  with:
+    version: latest-0.4
+```
