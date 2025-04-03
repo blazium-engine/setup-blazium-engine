@@ -9,7 +9,7 @@ branding:
 inputs:
   version:
     description: 'Blazium Engine version: e.g., 0.1.184, 0.1.188, etc. Must include major, minor, and patch.'
-    required: true
+    default: 'latest'
   bin-path:
     description: 'Path for binaries to be installed to, relative to the current working directory of the action. This is the path that will be added to the system path.'
     default: 'bin'
