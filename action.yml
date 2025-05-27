@@ -151,7 +151,7 @@ runs:
         fi
 
     - name: Cache Blazium Editor
-      if: ${{ inputs.download_editor == 'true' || inputs.use_cache == 'true' }}
+      if: ${{ inputs.download_editor == 'true' || inputs.use-cache == 'true' }}
       id: cache-editor
       uses: actions/cache@v3
       with:
@@ -259,7 +259,7 @@ runs:
         ${{ env.BLAZIUM_EDITOR }} --version
 
     - name: Cache Blazium Template
-      if: ${{ inputs.download_template == 'true' && inputs.use_cache == 'true' }}
+      if: ${{ inputs.download_template == 'true' && inputs.use-cache == 'true' }}
       id: cache-template
       uses: actions/cache@v3
       with:
